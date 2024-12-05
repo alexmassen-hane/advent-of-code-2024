@@ -11,7 +11,6 @@ y = data[:, 1]
 
 total_sum = 0
 done = 0
-x_len = len(x)
 for i in range(len(x)):
     x_min_loc = np.argmin(x, axis=0)
     y_min_loc = np.argmin(y, axis=0)
