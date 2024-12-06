@@ -3,8 +3,6 @@ def get_sign(number):
 
 
 def check_safe(levels):
-
-    # last_sign = get_sign(levels[1] - levels[0])
     last_sign = get_sign(levels[1] - levels[0])
     for i in range(1, len(levels), 1):
         diff = levels[i] - levels[i - 1]
