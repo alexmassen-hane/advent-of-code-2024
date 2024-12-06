@@ -18,11 +18,7 @@ def check_safe(levels):
             return False, i
 
         # Check if the differences are within bounds
-        if abs(diff) < 1:
-            print(f"diff not within bounds: i={i} {diff}")
-            return False, i
-
-        if abs(diff) > 3:
+        if abs(diff) < 1 or abs(diff) > 3:
             print(f"diff not within bounds: i={i} {diff}")
             return False, i
 
