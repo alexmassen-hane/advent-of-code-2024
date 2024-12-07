@@ -2,14 +2,13 @@ import re
 
 
 def find_mults_from_str(line: str):
-    """Finds the multiple of  'mul(X,Y),' and performs the sum and multiplication in a string."""
-
-    # Use regex to find the 'mult(x,y)' in the string
-
     prod_sum = 0
     r = re.compile(r"mul\(\d+,\d+\)")
     r_digits = re.compile(r"\d+")
+
+    # Iterate through all of the 'mult(X,Y)' elements found
     for digits in r.finditer(line):
+        # Find all the digits in the element and multiply them together
         prods = r_digits.findall(digits.group())
         prod_sum += int(prods[0]) * int(prods[1])
 
