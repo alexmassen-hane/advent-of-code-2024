@@ -1,12 +1,11 @@
 import re
 
 with open("input.txt", "r") as file:
-    raw_data = file.readlines()
-    data = [line.rstrip() for line in raw_data]
+    data = [line.rstrip() for line in file.readlines()]
 
 # test = ["xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))"]
 
-# Define regex definitions
+# Define regex patterns
 r = re.compile(r"mul\(\d+,\d+\)")
 r_digits = re.compile(r"\d+")
 
