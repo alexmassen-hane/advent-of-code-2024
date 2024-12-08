@@ -58,10 +58,10 @@ for levels in data:
     else:
         # Try again by removing the bad reading
 
-        # I very much cheese this one. Instead of improving my logic of doing the checking,
-        # I just reversed the the list because I know my check_safe function
+        # I very much cheesed this one. Instead of improving my logic of doing the checking,
+        # I just reversed the list because I know my check_safe function
         # couldn't do the edge case of [3,2,3,4,5] but it does work for [5,4,3,2,3] and removes
-        # the one at the end, rather than the start. So it ends up performing the same checks four times.
+        # the one at the end, rather than the start. So it ends up performing the check four times.
 
         print(f"Removing value from levels: {levels[bad_loc]}, bad_loc={bad_loc}")
         levels.pop(bad_loc)
