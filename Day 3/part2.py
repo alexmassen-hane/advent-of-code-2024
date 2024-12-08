@@ -1,13 +1,12 @@
 import re
 
 with open("input.txt", "r") as file:
-    raw_data = file.readlines()
-    data = [line.rstrip() for line in raw_data]
+    data = [line.rstrip() for line in file.readlines()]
 
 # test = ["xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))"]
 
 
-# Define regex definitions
+# Define regex patterns
 r = re.compile(r"do\(\)|don\'t\(\)|mul\(\d+,\d+\)")
 r_digits = re.compile(r"\d+")
 
@@ -16,10 +15,8 @@ do_calc = True
 total_sum = 0
 for line in data:
 
-    # Iterate through all of different 'do()' and 'dont()' cases
-
+    # Iterate through all of different 'do()', 'dont()' and 'mult(X,Y)' cases
     for found in r.finditer(line):
-        # Find all the digits in the element and multiply them together
 
         if found.group() == "do()":
             do_calc = True
@@ -27,6 +24,7 @@ for line in data:
         if found.group() == "don't()":
             do_calc = False
 
+        # Only perform the calc if it's preceeded with a 'do()'
         digits = r_digits.findall(found.group())
         if do_calc and digits:
             total_sum += int(digits[0]) * int(digits[1])
