@@ -37,7 +37,7 @@ def display_map(data, path):
 
 
 # Read in the map data from file
-with open("input.txt", "r") as file:
+with open("ex_input.txt", "r") as file:
     data = [[char for char in line.rstrip()] for line in file]
 
 # Find the initial position of the guard.
@@ -80,5 +80,8 @@ while object_in_path:
 
 # Debugging
 display_map(data, path)
+
+for pos, _ in path.items():
+    print(pos)
 
 print(f"Answer: {len(path)}")
