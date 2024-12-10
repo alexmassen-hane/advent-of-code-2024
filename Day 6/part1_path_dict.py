@@ -37,7 +37,7 @@ def display_map(data, path):
 
 
 # Read in the map data from file
-with open("ex_input.txt", "r") as file:
+with open("input.txt", "r") as file:
     data = [[char for char in line.rstrip()] for line in file]
 
 # Find the initial position of the guard.
@@ -73,9 +73,6 @@ while object_in_path:
 
         # Update the position for next iteration.
         pos = (pos[0] + dir[0], pos[1] - dir[1])
-
-    if not object_in_path:
-        object_to_hit = False
 
     # Update old position to new
     pos = last_pos
