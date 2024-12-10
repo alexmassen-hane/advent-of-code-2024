@@ -1,108 +1,211 @@
+import copy
+
+
 def find_start_position(map):
     """Find the starting position of the guard, marked by the '^' character."""
     for j in range(len(map[0])):
         for i in range(len(map[j])):
 
             if map[j][i] == "^":
-                return [i, j]
+                return (i, j)
 
-    return [None, None]
+    return (None, None)
 
 
-def update_direction(direction):
+def update_direction(dir):
     """Rotate the guard's direction using a -90 deg rotation matrix"""
-    return [0 * direction[0] + 1 * direction[1], -1 * direction[0] + 0 * direction[1]]
+    return (0 * dir[0] + 1 * dir[1], -1 * dir[0] + 0 * dir[1])
 
 
-def display_map(data):
-    for line in data:
+def is_in_bounds(data, pos):
+    """Check if the position of the guard is within the bounds of the grid."""
+    return (
+        pos[0] <= len(data[0]) - 1
+        and pos[0] >= 0
+        and pos[1] <= len(data) - 1
+        and pos[1] >= 0
+    )
+
+
+def display_map(data, path=None, O_point=None, loop_point=None):
+
+    display = copy.deepcopy(data)
+
+    print("---------------------------------------")
+    if path:
+        for pos, _ in path.items():
+            # print(pos)
+            if display[pos[1]][pos[0]] != "^":
+                display[pos[1]][pos[0]] = "X"
+
+    if O_point:
+        display[O_point[1]][O_point[0]] = "O"
+
+    if loop_point:
+        display[loop_point[1]][loop_point[0]] = "%"
+
+    for line in display:
         print("".join(line))
+
+    if loop_point:
+        display[loop_point[1]][loop_point[0]] = "."
     print("---------------------------------------")
 
 
-def clear_X_from_map(data):
-    return [["." if char == "X" else char for char in line] for line in data]
+def find_path(data, initial_pos):
+
+    pos = copy.deepcopy(initial_pos)
+    dir = (0, 1)
+
+    print(f"Initial position and direction: {pos}, {dir}")
+    path = {}
+    trajectory = {}
+    closed_loop_pos = {}
+
+    display_map(data)
+
+    object_in_path = True
+    while object_in_path:
+
+        # If it's within bounds of map and no object in path found yet.
+        object_in_path = False
+        while is_in_bounds(data, pos) and not object_in_path:
+
+            # Check if it's a closed loop
+            if (
+                (pos, update_direction(dir)) in trajectory
+                and not object_in_path
+                and not pos in closed_loop_pos
+            ):
+                closed_loop_pos[pos] = None
+
+            # Check if the point we're trying is an obstacle.
+            if data[pos[1]][pos[0]] == "#" or data[pos[1]][pos[0]] == "O":
+                object_in_path = True
+
+                # The last position of the guard is 1 step back from the current position.
+                last_pos = (pos[0] - dir[0], pos[1] + dir[1])
+
+                # display_map(data, trajectory)
+
+                # Rotate the direction of the guard
+                dir = update_direction(dir)
+
+            # Keep track of the path that the guard has taken
+            if not pos in path and not object_in_path and is_in_bounds(data, pos):
+                path[pos] = dir
+                trajectory[(pos, dir)] = None
+
+            # Update the position for next iteration.
+            pos = (pos[0] + dir[0], pos[1] - dir[1])
+
+        # Update old position to new
+        pos = last_pos
+
+    display_map(data, path)
+
+    # Return a dictionary of positions and direction pairs.
+    return path, closed_loop_pos
+
+
+def check_for_closed_loop(data, initial_pos, closed_loop_pos, O_point=None):
+
+    pos = copy.deepcopy(initial_pos)
+    dir = (0, 1)
+
+    print(f"Initial position and direction: {pos}, {dir}")
+    path = {}
+    trajectory = {}
+
+    closed_loop_pos = {}
+
+    object_in_path = True
+    while object_in_path and not O_point:
+
+        # If it's within bounds of map and no object in path found yet.
+        object_in_path = False
+        while is_in_bounds(data, pos) and not object_in_path:
+
+            # Keep track of the path that the guard has taken
+            if not (pos, dir) in trajectory and not object_in_path:
+                path[pos] = None
+                trajectory[(pos, dir)] = None
+
+            # Check if it's a closed loop
+            if (
+                (pos, update_direction(dir)) in trajectory
+                and not object_in_path
+                and pos not in closed_loop_pos
+            ):
+                closed_loop_pos[pos] = None
+
+                display_map(data, path, loop_point=pos)
+
+                return closed_loop_pos
+
+            # Check if the point we're trying is an obstacle.
+            if data[pos[1]][pos[0]] == "#" or data[pos[1]][pos[0]] == "O":
+                object_in_path = True
+
+                # The last position of the guard is 1 step back from the current position.
+                last_pos = (pos[0] - dir[0], pos[1] + dir[1])
+
+                # Rotate the direction of the guard
+                dir = update_direction(dir)
+
+            # Update the position for next iteration.
+            pos = (pos[0] + dir[0], pos[1] - dir[1])
+
+        # Update old position to new
+        pos = last_pos
+
+    return closed_loop_pos
 
 
 # Read in the map data from file
 with open("ex_input.txt", "r") as file:
     data = [[char for char in line.rstrip()] for line in file]
 
+initial_pos = find_start_position(data)
+# Find the path that the guard takes.
+path_taken, closed_loop_pos = find_path(data, initial_pos)
+print(f"Length of the path taken by the guard: {len(path_taken)}")
 
-# Grid min and max of the grid indices.
-x_max = len(data[0]) - 1
-x_min = 0
-y_max = len(data) - 1
-y_min = 0
-
-# Find the initial position of the guard.
-last_pos = find_start_position(data)
-pos = last_pos.copy()
-
-direction = [0, 1]
-print(f"Initial direction: {direction}")
-
-object_to_hit = True
-possible_loop = 0
-rotate_count = 0
-
-while object_to_hit:
-
-    # If it's within bounds of map and no object in path found yet.
-    object_in_path = False
-    steps = 0
-    while (
-        pos[0] <= x_max
-        and pos[0] >= 0
-        and pos[1] <= y_max
-        and pos[1] >= 0
-        and not object_in_path
-    ):
-
-        # Check if the point we're trying is an obstacle.
-        if data[pos[1]][pos[0]] == "#":
-            object_in_path = True
-            last_pos = [pos[0] - direction[0], pos[1] + direction[1]]
-
-        # Keep track of the path that the guard has taken
-        if data[pos[1]][pos[0]] != "X" and not object_in_path:
-            data[pos[1]][pos[0]] = "X"
-
-        if pos != last_pos and data[pos[1]][pos[0]] == "X" and rotate_count == 3:
-            rotate_count = 0
-            possible_loop += 1
-
-            #  # Debugging
-            data[pos[1]][pos[0]] = "O"
-            display_map(data)
-            data[pos[1]][pos[0]] = "."
-
-            data = clear_X_from_map(data)
-
-        # Update the position we're trying.
-        if not object_in_path:
-            pos = [
-                last_pos[0] + steps * direction[0],
-                last_pos[1] - steps * direction[1],
-            ]
-            steps += 1
-
-    if object_in_path:
-
-        # Rotate the direction of the guard
-        direction = update_direction(direction)
-        rotate_count += 1
-
-        # # Debugging
-        # data[last_y_pos][last_x_pos] = "^"
-        # display_map(data)
-
-    else:
-        object_to_hit = False
-
-    pos = last_pos
-
-# Debugging
 # display_map(data)
+# display_map(data, path_taken)
 
-print(f"Answer: {possible_loop}")
+# Recheck every point that the guard takes.
+
+# Find all close loops that aren't by adding extras in paths.
+# closed_loop_pos.update(check_for_closed_loop(data, initial_pos, closed_loop_pos))
+for pos, dir in path_taken.items():
+
+    print(f"Position and direction pair: {pos}, {dir}")
+
+    check_pos = (pos[0] + dir[0], pos[1] - dir[1])
+    if data[pos[1]][pos[0]] != "^" and data[check_pos[1]][check_pos[0]] != "#":
+        print(f"Now checking point: {check_pos}, count: {len(closed_loop_pos)}")
+
+        # Put a blockage in the way of the guard and check if it causes a closed loop.
+        data[check_pos[1]][check_pos[0]] = "O"
+
+        closed_loop_pos.update(
+            check_for_closed_loop(data, initial_pos, closed_loop_pos)
+        )
+
+        # display_map(data, None, check_pos)
+
+        # if check_for_closed_loop(data):
+        #     count += 1
+
+        data[check_pos[1]][check_pos[0]] = "."
+
+# check_pos = (6, 1)
+# print(f"Now checking point: {check_pos}")
+
+# if data[check_pos[1]][check_pos[0]] != "^":
+#     data[check_pos[1]][check_pos[0]] = "#"
+
+#     count += check_for_closed_loop(data)
+
+print(f"Answer: {len(closed_loop_pos)}")
