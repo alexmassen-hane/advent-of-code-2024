@@ -1,18 +1,13 @@
 with open("input.txt", "r") as file:
-    raw_data = file.readlines()
-
-cleaned = [line.rstrip().split("   ") for line in raw_data]
+    cleaned = [line.rstrip().split("   ") for line in file.readlines()]
 
 left = [int(line[0]) for line in cleaned]
 right = [int(line[1]) for line in cleaned]
 
-left.sort()
-right.sort()
-
 total_sum = 0
 for x in left:
 
-    # This can probably be done better with sets.
+    # This can probably be done better with different list notation and counts but I can't be bothered.
     count = 0
     for y in right:
         if x == y:
