@@ -1,8 +1,7 @@
 import math
-from typing import Tuple, List
 
 
-def parse_input(input_path: str) -> Tuple[List[str], List[str]]:
+def parse_input(input_path):
     """
     The input file contains both rules and the lists to check.
 
@@ -35,7 +34,7 @@ def parse_input(input_path: str) -> Tuple[List[str], List[str]]:
     return rules, lists_to_check
 
 
-def check_list(rules: List[str], to_check: List[str]) -> bool:
+def check_list(rules, to_check) -> bool:
     """Check an incoming list to see if it works by the given rules or not."""
 
     for before, after in rules:
@@ -43,7 +42,6 @@ def check_list(rules: List[str], to_check: List[str]) -> bool:
             before_index = to_check.index(before)
             if after in to_check[:before_index]:
                 after_index = to_check.index(after)
-                # print(f"Element {after} is before the element {before} in list.")
                 return False, before_index, after_index
         except:
             pass
@@ -52,12 +50,12 @@ def check_list(rules: List[str], to_check: List[str]) -> bool:
     return True, None, None
 
 
-def make_list_correct(rules: List[str], to_change: List[str]) -> bool:
+def make_list_correct(rules, to_change):
     """Make a list correct by using the rules to switch the before and after parts until it is correct."""
 
     list_is_correct, before_index, after_index = check_list(rules, to_change)
     if list_is_correct:
-        # Return nothing
+        # Return nothing if the list is already correct.
         return None
 
     while not list_is_correct:
@@ -68,6 +66,7 @@ def make_list_correct(rules: List[str], to_change: List[str]) -> bool:
 
         list_is_correct, before_index, after_index = check_list(rules, to_change)
 
+    # Return the corrected list
     return to_change
 
 

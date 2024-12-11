@@ -1,8 +1,7 @@
 import math
-from typing import Tuple, List
 
 
-def parse_input(input_path: str) -> Tuple[List[str], List[str]]:
+def parse_input(input_path):
     """
     The input file contains both rules and the lists to check.
 
@@ -35,7 +34,7 @@ def parse_input(input_path: str) -> Tuple[List[str], List[str]]:
     return rules, lists_to_check
 
 
-def check_list(rules: List[str], to_check: List[str]) -> bool:
+def check_list(rules, to_check):
     """Check an incoming list to see if it works by the given rules or not."""
 
     for before, after in rules:
