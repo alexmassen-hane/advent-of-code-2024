@@ -59,7 +59,7 @@ while object_in_path:
             object_in_path = True
 
             # Debugging
-            print(f"Found obstical at: {pos}")
+            print(f"Found obstacle at: {pos}")
             display_map(data, path)
 
             last_pos = (pos[0] - dir[0], pos[1] + dir[1])
