@@ -1,5 +1,3 @@
-import re
-
 with open("input.txt", "r") as file:
     data = [list(line.rstrip()) for line in file.readlines()]
 
@@ -31,7 +29,7 @@ for rotate in range(1, 5):
             # Check both diagonal directions and add to count if works.
             check_down = "".join([data[i][j - 1], data[i + 1][j], data[i + 2][j + 1]])
             check_up = "".join([data[i + 2][j - 1], data[i + 1][j], data[i][j + 1]])
-            if re.findall(r"MAS", check_down) and re.findall(r"MAS", check_up):
+            if check_down == "MAS" and check_up == "MAS":
                 x_count += 1
 
     # Rotate the matrix for next iteration
