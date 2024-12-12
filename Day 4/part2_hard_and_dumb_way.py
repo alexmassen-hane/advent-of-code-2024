@@ -1,13 +1,9 @@
 import re
 
-
-def rotate_matrix(data):
-    return [list(row) for row in zip(*data[::-1])]
-
-
 with open("input.txt", "r") as file:
     data = [list(line.rstrip()) for line in file.readlines()]
 
+# What I used for testing
 # data = [
 #     ["1", "2", "3"],
 #     ["M", "b", "S"],
@@ -24,9 +20,9 @@ for rotate in range(1, 5):
 
         # Find all the A's in the row thats not next to the edges
         indexes = [
-            match.start()
-            for match in re.finditer(r"A", "".join(line))
-            if match.start() > 0 and match.start() < len("".join(line)) - 1
+            j
+            for j in range(len(line))
+            if line[j] == "A" and j > 0 and j < len(line) - 1
         ]
 
         # Scan along where the As were found
@@ -39,6 +35,6 @@ for rotate in range(1, 5):
                 x_count += 1
 
     # Rotate the matrix for next iteration
-    data = rotate_matrix(data)
+    data = [list(row) for row in zip(*data[::-1])]
 
 print(f"Answer: {x_count}")
