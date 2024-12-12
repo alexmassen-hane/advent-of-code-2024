@@ -1,12 +1,8 @@
 import re
-import copy
 
 
 def find_words(line):
     """Find an instance of XMAS in the incoming line."""
-
-    # xmas_index = [match.start() for match in re.finditer(r"XMAS", line)]
-    # smax_index = [match.end() for match in re.finditer(r"SAMX", line)]
 
     xmas_count = sum(1 for _ in re.finditer(r"XMAS", line))
     samx_count = sum(1 for _ in re.finditer(r"SAMX", line))
@@ -38,11 +34,11 @@ def diagonalize_matrix(data, select):
 with open("input.txt", "r") as file:
     data = [list(line.rstrip()) for line in file.readlines()]
 
-data = [
-    ["a", "b", "c"],
-    ["d", "e", "f"],
-    ["g", "h", "i"],
-]
+# data = [
+#     ["a", "b", "c"],
+#     ["d", "e", "f"],
+#     ["g", "h", "i"],
+# ]
 
 word_count = 0
 
