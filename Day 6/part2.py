@@ -33,8 +33,7 @@ def display_map(data, path=None, O_point=None, loop_point=None):
 
     print("---------------------------------------")
     if path:
-        for pos, _ in path.items():
-            # print(pos)
+        for pos in path.keys():
             if display[pos[1]][pos[0]] != "^":
                 display[pos[1]][pos[0]] = "X"
 
@@ -53,159 +52,138 @@ def display_map(data, path=None, O_point=None, loop_point=None):
 
 
 def find_path(data, initial_pos):
+    """Find the path that the guard takes"""
 
-    pos = copy.deepcopy(initial_pos)
+    guard_pos = copy.deepcopy(initial_pos)
     dir = (0, 1)
 
-    print(f"Initial position and direction: {pos}, {dir}")
+    print(f"Initial position and direction: {guard_pos}, {dir}")
     path = {}
-    trajectory = {}
-    closed_loop_pos = {}
 
-    display_map(data)
+    # display_map(data, path)
+    # print(path)
 
-    object_in_path = True
-    while object_in_path:
+    while is_in_bounds(data, guard_pos):
 
-        # If it's within bounds of map and no object in path found yet.
-        object_in_path = False
-        while is_in_bounds(data, pos) and not object_in_path:
+        # Keep track of the path that the guard has taken
+        path[guard_pos] = None
+        check_ahead = (guard_pos[0] + dir[0], guard_pos[1] - dir[1])
 
-            # Check if it's a closed loop
-            if (
-                (pos, update_direction(dir)) in trajectory
-                and not object_in_path
-                and not pos in closed_loop_pos
-            ):
-                closed_loop_pos[pos] = None
-
+        if is_in_bounds(data, check_ahead):
             # Check if the point we're trying is an obstacle.
-            if data[pos[1]][pos[0]] == "#" or data[pos[1]][pos[0]] == "O":
-                object_in_path = True
-
-                # The last position of the guard is 1 step back from the current position.
-                last_pos = (pos[0] - dir[0], pos[1] + dir[1])
-
-                # display_map(data, trajectory)
-
+            if data[check_ahead[1]][check_ahead[0]] == "#":
                 # Rotate the direction of the guard
                 dir = update_direction(dir)
+        else:
 
-            # Keep track of the path that the guard has taken
-            if not pos in path and not object_in_path and is_in_bounds(data, pos):
-                path[pos] = dir
-                trajectory[(pos, dir)] = None
+            # The check ahead is not in the map, therefore out of bounds and should exit the loop.
 
-            # Update the position for next iteration.
-            pos = (pos[0] + dir[0], pos[1] - dir[1])
+            # display_map(data, path)
+            # print(path)
 
-        # Update old position to new
-        pos = last_pos
+            return path
+
+        # Update the position of the guard for next iteration.
+        guard_pos = (guard_pos[0] + dir[0], guard_pos[1] - dir[1])
+
+        # display_map(data, path)
+        # print(path)
+
+
+def check_if_closed_loop(data, initial_pos, check_pos=None):
+    """Find the path that the guard takes"""
+
+    guard_pos = copy.deepcopy(initial_pos)
+    dir = (0, 1)
+
+    print(f"Initial position and direction: {guard_pos}, {dir}")
+    path = {}
+    trajectory = {}
 
     display_map(data, path)
+    print(path)
 
-    # Return a dictionary of positions and direction pairs.
-    return path, closed_loop_pos
+    while is_in_bounds(data, guard_pos):
 
+        # Keep track of the path that the guard has taken
+        path[guard_pos] = dir
+        trajectory[(guard_pos, dir)] = 0
 
-def check_for_closed_loop(data, initial_pos, closed_loop_pos, O_point=None):
+        check_ahead = (guard_pos[0] + dir[0], guard_pos[1] - dir[1])
 
-    pos = copy.deepcopy(initial_pos)
-    dir = (0, 1)
+        # Guard has been here before. This is a loop.
+        if (guard_pos, update_direction(dir)) in trajectory:
 
-    print(f"Initial position and direction: {pos}, {dir}")
-    path = {}
-    trajectory = {}
+            trajectory[(guard_pos, update_direction(dir))] += 1
+            print(
+                f"Found {trajectory[(guard_pos, update_direction(dir))]} loop/s at: {guard_pos}"
+            )
 
-    closed_loop_pos = {}
+            # Guard is going in an infinite loop - need to exit.
+            if trajectory[(guard_pos, update_direction(dir))] > 1:
+                print(f"Infinite loop found {(guard_pos, dir)}")
+                display_map(data, path)
 
-    object_in_path = True
-    while object_in_path and not O_point:
+                if check_pos == guard_pos:
+                    return 1
+                else:
+                    return 0
 
-        # If it's within bounds of map and no object in path found yet.
-        object_in_path = False
-        while is_in_bounds(data, pos) and not object_in_path:
-
-            # Keep track of the path that the guard has taken
-            if not (pos, dir) in trajectory and not object_in_path:
-                path[pos] = None
-                trajectory[(pos, dir)] = None
-
-            # Check if it's a closed loop
-            if (
-                (pos, update_direction(dir)) in trajectory
-                and not object_in_path
-                and pos not in closed_loop_pos
-            ):
-                closed_loop_pos[pos] = None
-
-                display_map(data, path, loop_point=pos)
-
-                return closed_loop_pos
-
+        if is_in_bounds(data, check_ahead):
             # Check if the point we're trying is an obstacle.
-            if data[pos[1]][pos[0]] == "#" or data[pos[1]][pos[0]] == "O":
-                object_in_path = True
-
-                # The last position of the guard is 1 step back from the current position.
-                last_pos = (pos[0] - dir[0], pos[1] + dir[1])
-
+            if data[check_ahead[1]][check_ahead[0]] == "#":
                 # Rotate the direction of the guard
                 dir = update_direction(dir)
+        else:
+            # The check ahead is not in the map, therefore out of bounds and should exit the loop.
+            display_map(data, path)
+            # print(path)
+            print(f"Exiting the map! ")
+            return 0
 
-            # Update the position for next iteration.
-            pos = (pos[0] + dir[0], pos[1] - dir[1])
+        # Update the position of the guard for next iteration.
+        guard_pos = (guard_pos[0] + dir[0], guard_pos[1] - dir[1])
 
-        # Update old position to new
-        pos = last_pos
-
-    return closed_loop_pos
+        display_map(data, path)
+        # print(path)
 
 
 # Read in the map data from file
 with open("ex_input.txt", "r") as file:
     data = [[char for char in line.rstrip()] for line in file]
 
+# Find the initial position of the guard from the ^ character
 initial_pos = find_start_position(data)
-# Find the path that the guard takes.
-path_taken, closed_loop_pos = find_path(data, initial_pos)
+path_taken = find_path(data, initial_pos)
 print(f"Length of the path taken by the guard: {len(path_taken)}")
 
-# display_map(data)
-# display_map(data, path_taken)
+# A test case for an infinite loop
+pos = (3, 6)
+dir = (0, 1)
+check_pos = pos
+loop_count = 0
+data[check_pos[1]][check_pos[0]] = "#"
 
-# Recheck every point that the guard takes.
+loop_count += check_if_closed_loop(data, initial_pos, check_pos)
 
-# Find all close loops that aren't by adding extras in paths.
-# closed_loop_pos.update(check_for_closed_loop(data, initial_pos, closed_loop_pos))
-for pos, dir in path_taken.items():
+data[check_pos[1]][check_pos[0]] = "."
 
-    print(f"Position and direction pair: {pos}, {dir}")
+# print("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+# loop_count = 0
+# for pos, dir in path_taken.items():
 
-    check_pos = (pos[0] + dir[0], pos[1] - dir[1])
-    if data[pos[1]][pos[0]] != "^" and data[check_pos[1]][check_pos[0]] != "#":
-        print(f"Now checking point: {check_pos}, count: {len(closed_loop_pos)}")
+#     print(pos)
 
-        # Put a blockage in the way of the guard and check if it causes a closed loop.
-        data[check_pos[1]][check_pos[0]] = "O"
+#     # check_pos = (pos[0] + dir[0], pos[1] - dir[1])
 
-        closed_loop_pos.update(
-            check_for_closed_loop(data, initial_pos, closed_loop_pos)
-        )
+#     if data[pos[1]][pos[0]] != "#":
 
-        # display_map(data, None, check_pos)
+#         data[pos[1]][pos[0]] = "#"
 
-        # if check_for_closed_loop(data):
-        #     count += 1
+#         loop_count += check_if_closed_loop(data, initial_pos, pos)
 
-        data[check_pos[1]][check_pos[0]] = "."
+#         data[pos[1]][pos[0]] = "."
 
-# check_pos = (6, 1)
-# print(f"Now checking point: {check_pos}")
+#         print("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 
-# if data[check_pos[1]][check_pos[0]] != "^":
-#     data[check_pos[1]][check_pos[0]] = "#"
-
-#     count += check_for_closed_loop(data)
-
-print(f"Answer: {len(closed_loop_pos)}")
+print(f"Answer: {loop_count}")
