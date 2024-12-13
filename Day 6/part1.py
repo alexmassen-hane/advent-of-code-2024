@@ -1,90 +1,89 @@
+import copy
+
+
 def find_start_position(map):
     """Find the starting position of the guard, marked by the '^' character."""
     for j in range(len(map[0])):
         for i in range(len(map[j])):
 
             if map[j][i] == "^":
-                return [i, j]
+                return (i, j)
 
-    return [None, None]
+    return (None, None)
 
 
-def update_direction(direction):
+def update_direction(dir):
     """Rotate the guard's direction using a -90 deg rotation matrix"""
-    return [0 * direction[0] + 1 * direction[1], -1 * direction[0] + 0 * direction[1]]
+    return (0 * dir[0] + 1 * dir[1], -1 * dir[0] + 0 * dir[1])
 
 
-def display_map(data):
-    for line in data:
+def is_in_bounds(data, pos):
+    """Check if the position of the guard is within the bounds of the grid."""
+    return (
+        pos[0] <= len(data[0]) - 1
+        and pos[0] >= 0
+        and pos[1] <= len(data) - 1
+        and pos[1] >= 0
+    )
+
+
+def display_map(data, path=None):
+
+    display = copy.deepcopy(data)
+
+    print("---------------------------------------")
+    if path:
+        for pos, _ in path.items():
+            display[pos[1]][pos[0]] = "X"
+
+    for line in display:
         print("".join(line))
     print("---------------------------------------")
+
+
+def find_path(data, initial_pos):
+    """Find the path that the guard takes"""
+
+    guard_pos = copy.deepcopy(initial_pos)
+    dir = (0, 1)
+
+    print(f"Initial position and direction: {guard_pos}, {dir}")
+    path = {}
+
+    # display_map(data, path)
+    # print(path)
+
+    while is_in_bounds(data, guard_pos):
+
+        # Keep track of the path that the guard has taken
+        path[guard_pos] = None
+        check_ahead = (guard_pos[0] + dir[0], guard_pos[1] - dir[1])
+
+        if is_in_bounds(data, check_ahead):
+            # Check if the point we're trying is an obstacle.
+            if data[check_ahead[1]][check_ahead[0]] == "#":
+                # Rotate the direction of the guard
+                dir = update_direction(dir)
+        else:
+
+            # The check ahead is not in the map, therefore out of bounds and should exit the loop.
+
+            # display_map(data, path)
+            # print(path)
+
+            return path
+
+        # Update the position of the guard for next iteration.
+        guard_pos = (guard_pos[0] + dir[0], guard_pos[1] - dir[1])
+
+        # display_map(data, path)
+        # print(path)
 
 
 # Read in the map data from file
 with open("input.txt", "r") as file:
     data = [[char for char in line.rstrip()] for line in file]
 
-
-# Grid min and max of the grid indices.
-x_max = len(data[0]) - 1
-x_min = 0
-y_max = len(data) - 1
-y_min = 0
-
-# Find the initial position of the guard.
-last_pos = find_start_position(data)
-
-direction = [0, 1]
-print(f"Initial direction: {direction}")
-
-object_to_hit = True
-position_count = 0
-
-while object_to_hit:
-
-    pos = last_pos
-
-    # If it's within bounds of map and no object in path found yet.
-    object_in_path = False
-    steps = 0
-    while (
-        pos[0] <= x_max
-        and pos[0] >= 0
-        and pos[1] <= y_max
-        and pos[1] >= 0
-        and not object_in_path
-    ):
-
-        # Check if the point we're trying is an obstacle.
-        if data[pos[1]][pos[0]] == "#":
-            object_in_path = True
-            last_pos = [pos[0] - direction[0], pos[1] + direction[1]]
-
-        # Keep track of the path that the guard has taken
-        if data[pos[1]][pos[0]] != "X" and not object_in_path:
-            position_count += 1
-            data[pos[1]][pos[0]] = "X"
-
-        # Update the position we're trying.
-        pos = [
-            last_pos[0] + steps * direction[0],
-            last_pos[1] - steps * direction[1],
-        ]
-        steps += 1
-
-    if object_in_path:
-
-        # Rotate the direction of the guard
-        direction = update_direction(direction)
-
-        # # Debugging
-        # data[last_y_pos][last_x_pos] = "^"
-        # display_map(data)
-
-    else:
-        object_to_hit = False
-
-# Debugging
-# display_map(data)
-
-print(f"Answer: {position_count}")
+initial_pos = find_start_position(data)
+path_taken = find_path(data, initial_pos)
+print(f"Length of the path taken by the guard: {len(path_taken)}")
